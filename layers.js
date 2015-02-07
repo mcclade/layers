@@ -25,7 +25,7 @@ module.exports = function(server, options) {
 
     /**
      * Returns a list of layer names.
-     * 
+     *
      * Finds the directories in the root path supplied
      * and returns their names as the layers this application
      * makes use of.
@@ -37,7 +37,7 @@ module.exports = function(server, options) {
 
         layers.forEach(function(layer) {
             if (layer === "controllers") {
-                hasControllers = true;
+              hasControllers = true;
             } else {
                 var fullPathToLayerDirectory = rootPath + "/" + layer;
                 if (isDirectory(fullPathToLayerDirectory)) {
@@ -46,7 +46,7 @@ module.exports = function(server, options) {
             }
         });
 
-	directories.sort();
+	      directories.sort();
 
         // Ensure handlers are always loaded last.
         if (hasControllers) {
@@ -69,14 +69,14 @@ module.exports = function(server, options) {
             var fullPathToFile = path + "/" + fileName;
             if (isDirectory(fullPathToFile)) {
                 loadComponents(fullPathToFile, layer);
-            } else if (fileName.indexOf(excludePrefix) != 0 && fileName.indexOf(".js") === fileName.length - 3) {
+            } else if (fileName.indexOf(excludePrefix) != 0 && (fileName.indexOf(".js") === fileName.length - 3 || fileName.indexOf(".coffee") === fileName.length - 7 ) ) {
                 var name = getRequireName(fileName),
                     item = require(path + "/" + name);
 
                 if (typeof item === "function") {
-                    item = item(server); 
+                    item = item(server);
                 }
-                
+
                 if (item) {
                     console.log("Attaching", layer + "." + getInstanceName(name));
                     components[getInstanceName(name)] = item;
@@ -106,17 +106,17 @@ module.exports = function(server, options) {
     /**
      * Synchronously checks to see whether a directory exists or not.
      */
-    function dirExistsSync (directory) { 
+    function dirExistsSync (directory) {
         try {
             fs.statSync(directory);
             return true;
         } catch (err) {
             return false;
-        } 
+        }
     }
 
     /**
-     * Synchronously checks whether the file at the path specified is a 
+     * Synchronously checks whether the file at the path specified is a
      * directory or not.
      */
     function isDirectory(file) {
@@ -132,7 +132,12 @@ module.exports = function(server, options) {
      * Synchronously returns the name of the file sans .js suffix.
      */
     function getRequireName(file) {
-        return file.substr(0, file.lastIndexOf(".js"));
+        var jsIndex = file.lastIndexOf(".js");
+        var coffeeIndex = file.lastIndexOf(".coffee");
+
+        var index = (jsIndex > coffeeIndex) ? jsIndex : coffeeIndex;
+
+        return file.substr(0, index);
     }
 
     /**
